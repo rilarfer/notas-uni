@@ -1,0 +1,8 @@
+# No subir archivos de Excel, Word ni scripts privados al repositorio público
+*.xlsx
+*.docx
+*.py
+*.bat
+__pycache__/
+.DS_Store
+Thumbs.db

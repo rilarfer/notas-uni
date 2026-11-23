@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal de Notas — UNI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true">UNI</div>
+        <div>
+          <h1>Consulta de Calificaciones</h1>
+          <p class="subtitle" id="headerSubtitle">Segundo Semestre 2026 · Docente: Ricardo Largaespada</p>
+        </div>
+      </div>
+      <div class="updated-pill" id="updatedPill" title="Última actualización de datos">
+        Actualizado: —
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <!-- Formulario de acceso -->
+    <section class="card lookup-card" id="lookupSection">
+      <div class="lookup-header">
+        <h2>Ingresa a tus notas</h2>
+        <p>Selecciona tu grupo y escribe el <strong>código único</strong> asignado por tu docente para ver tu desglose de calificaciones, acumulado, nota final y convocatoria.</p>
+      </div>
+
+      <form id="lookupForm" class="lookup-form" novalidate>
+        <div class="field">
+          <label for="groupSelect">Grupo</label>
+          <select id="groupSelect" required>
+            <option value="">Selecciona tu grupo...</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="codeInput">Código único (SINGU)</label>
+          <input
+            type="text"
+            id="codeInput"
+            placeholder="Ej. 6B2F65C2"
+            autocomplete="off"
+            spellcheck="false"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="searchBtn">
+          Ver mis notas
+        </button>
+      </form>
+
+      <div id="errorBox" class="alert alert-error hidden" role="alert"></div>
+    </section>
+
+    <!-- Resultados del estudiante -->
+    <section id="resultSection" class="result-section hidden" aria-live="polite">
+      <div class="card student-banner">
+        <div class="student-info">
+          <span class="group-tag" id="resGroupTag">—</span>
+          <h2 id="resName">—</h2>
+          <p class="student-meta">
+            <span id="resSubject">—</span> ·
+            <span id="resEmail">—</span> ·
+            Código: <strong id="resCode">—</strong>
+          </p>
+        </div>
+        <div class="student-actions">
+          <span class="status-badge" id="resStatusBadge">—</span>
+          <div class="action-buttons no-print">
+            <button type="button" class="btn btn-secondary" id="printBtn">Imprimir / PDF</button>
+            <button type="button" class="btn btn-ghost" id="resetBtn">Otra consulta</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjetas KPI -->
+      <div class="kpi-grid" id="kpiGrid">
+        <article class="card kpi-card">
+          <span class="kpi-label">Acumulado</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpiAcumulado">0</span>
+            <span class="kpi-max" id="kpiAcumuladoMax"></span>
+          </div>
+          <span class="kpi-hint" id="kpiAcumuladoHint">Trabajos, pruebas y entregas</span>
+        </article>
+
+        <article class="card kpi-card kpi-highlight">
+          <span class="kpi-label">Nota Final</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpiFinal">0</span>
+            <span class="kpi-max">/ 100</span>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" id="finalProgressBar"></div>
+            <div class="pass-marker" title="Nota mínima de aprobación: 60"></div>
+          </div>
+          <span class="kpi-hint" id="kpiFinalHint">Mínimo para aprobar: 60 pts</span>
+        </article>
+
+        <article class="card kpi-card kpi-convocatoria">
+          <span class="kpi-label">Nota de Convocatoria</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpiConvocatoria">Pendiente</span>
+            <span class="kpi-max" id="kpiConvocatoriaMax"></span>
+          </div>
+          <span class="kpi-hint" id="kpiConvocatoriaHint">Aún no registrada por el docente</span>
+        </article>
+      </div>
+
+      <!-- Resumen por bloques -->
+      <section class="card" id="summaryBlocksCard">
+        <h3 class="section-title">Resumen por bloques</h3>
+        <div class="blocks-grid" id="summaryBlocksGrid"></div>
+      </section>
+
+      <!-- Tabla detallada de evaluaciones -->
+      <section class="card">
+        <div class="table-header-row">
+          <h3 class="section-title">Detalle de evaluaciones</h3>
+          <span class="table-count" id="evalCountLabel">0 evaluaciones</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="grades-table">
+            <thead>
+              <tr>
+                <th>Evaluación</th>
+                <th class="num-col">Obtenido</th>
+                <th class="num-col">Máximo</th>
+                <th class="bar-col">Rendimiento</th>
+              </tr>
+            </thead>
+            <tbody id="evalTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="footer no-print">
+    <div class="container">
+      <p>Portal de consulta académica · Docente: Ricardo Largaespada</p>
+    </div>
+  </footer>
+
+  <script src="grades-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
