@@ -222,7 +222,74 @@
     resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  lookupForm.addEventListener("submit", function (e) {
+  function b64ToBytes(b64) {
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+
+  function bytesToHex(buffer) {
+    return Array.from(new Uint8Array(buffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  async function buscarYDescifrarEstudiante(grupoId, codigo) {
+    if (!window.crypto || !window.crypto.subtle) {
+      throw new Error(
+        "Tu navegador bloqueó Web Crypto en este contexto. Abre la página desde GitHub Pages (HTTPS) o un servidor local (localhost)."
+      );
+    }
+
+    const enc = new TextEncoder();
+    const secret = `${grupoId}:${codigo}`;
+    const secretBytes = enc.encode(secret);
+
+    const lookupInput = enc.encode(`LOOKUP:${secret}`);
+    const hashBuf = await window.crypto.subtle.digest("SHA-256", lookupInput);
+    const lookupId = bytesToHex(hashBuf);
+
+    const registro = data.registros && data.registros[lookupId];
+    if (!registro) {
+      return null;
+    }
+
+    const salt = b64ToBytes(registro.s);
+    const iv = b64ToBytes(registro.i);
+    const ciphertext = b64ToBytes(registro.d);
+
+    const baseKey = await window.crypto.subtle.importKey(
+      "raw",
+      secretBytes,
+      "PBKDF2",
+      false,
+      ["deriveKey"]
+    );
+
+    const aesKey = await window.crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt,
+        iterations: 100000,
+        hash: "SHA-256",
+      },
+      baseKey,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["decrypt"]
+    );
+
+    const plainBuf = await window.crypto.subtle.decrypt(
+      { name: "AES-GCM", iv },
+      aesKey,
+      ciphertext
+    );
+
+    return JSON.parse(new TextDecoder().decode(plainBuf));
+  }
+
+  lookupForm.addEventListener("submit", async function (e) {
     e.preventDefault();
     const grupoId = groupSelect.value.trim();
     const codigo = codeInput.value.trim().toUpperCase();
@@ -244,15 +311,18 @@
       return;
     }
 
-    const est = grupo.estudiantes.find((s) => s.codigo.toUpperCase() === codigo);
-    if (!est) {
-      showError(
-        `No se encontró ningún estudiante con el código "${codigo}" en el grupo ${grupoId}. Verifica que el grupo y el código sean correctos.`
-      );
-      return;
+    try {
+      const est = await buscarYDescifrarEstudiante(grupoId, codigo);
+      if (!est) {
+        showError(
+          `No se encontró ningún estudiante con el código "${codigo}" en el grupo ${grupoId}. Verifica que el grupo y el código sean correctos.`
+        );
+        return;
+      }
+      renderStudent(grupo, est);
+    } catch (err) {
+      showError(err.message || "Error al verificar el código.");
     }
-
-    renderStudent(grupo, est);
   });
 
   document.getElementById("printBtn").addEventListener("click", () => window.print());
