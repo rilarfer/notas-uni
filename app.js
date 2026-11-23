@@ -65,18 +65,27 @@
     document.getElementById("resEmail").textContent = est.correo || "Sin correo";
     document.getElementById("resCode").textContent = est.codigo;
 
-    // Estado general
+    // Estado general y felicitación
     const badge = document.getElementById("resStatusBadge");
+    const congratsBanner = document.getElementById("congratsBanner");
     badge.className = "status-badge";
+    congratsBanner.classList.add("hidden");
     const tieneConv = est.notaConvocatoria !== null && est.notaConvocatoria !== undefined;
 
     if (est.notaFinal >= minPass) {
       badge.textContent = "Aprobado";
       badge.classList.add("status-pass");
+      congratsBanner.textContent = `¡Felicidades, ${est.nombre}! Has aprobado la asignatura con ${fmt(est.notaFinal)} puntos.`;
+      congratsBanner.classList.remove("hidden");
+    } else if (est.notaFinal < 30) {
+      badge.textContent = "Reprobado";
+      badge.classList.add("status-fail");
     } else if (tieneConv) {
       if (est.notaConvocatoria >= minPass) {
         badge.textContent = "Aprobado en Convocatoria";
         badge.classList.add("status-pass");
+        congratsBanner.textContent = `¡Felicidades, ${est.nombre}! Has aprobado la asignatura en convocatoria con ${fmt(est.notaConvocatoria)} puntos.`;
+        congratsBanner.classList.remove("hidden");
       } else {
         badge.textContent = "Reprobado";
         badge.classList.add("status-fail");
@@ -105,12 +114,17 @@
     const convMax = document.getElementById("kpiConvocatoriaMax");
     const convHint = document.getElementById("kpiConvocatoriaHint");
 
-    convVal.classList.remove("is-pending", "is-na");
+    convVal.classList.remove("is-pending", "is-na", "is-fail");
     if (est.notaFinal >= minPass) {
       convVal.textContent = "No aplica";
       convVal.classList.add("is-na");
       convMax.textContent = "";
       convHint.textContent = `Aprobado con ${fmt(est.notaFinal)} pts (≥ ${minPass})`;
+    } else if (est.notaFinal < 30) {
+      convVal.textContent = "No aplica";
+      convVal.classList.add("is-fail");
+      convMax.textContent = "";
+      convHint.textContent = "Nota menor a 30 pts (sin derecho a convocatoria)";
     } else if (tieneConv) {
       convVal.textContent = fmt(est.notaConvocatoria);
       convMax.textContent = "/ 100";

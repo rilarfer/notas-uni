@@ -234,6 +234,14 @@ body {
   border: 1px solid #fecaca;
 }
 
+.alert-success {
+  margin-top: 0;
+  background: var(--success-soft);
+  color: var(--success);
+  border: 1px solid #bbf7d0;
+  font-weight: 600;
+}
+
 .hidden {
   display: none !important;
 }
@@ -362,6 +370,11 @@ body {
 .kpi-value.is-na {
   font-size: 1.35rem;
   color: var(--success);
+}
+
+.kpi-value.is-fail {
+  font-size: 1.35rem;
+  color: var(--danger);
 }
 
 .kpi-max {
