@@ -77,9 +77,6 @@
       badge.classList.add("status-pass");
       congratsBanner.textContent = `¡Felicidades, ${est.nombre}! Has aprobado la asignatura con ${fmt(est.notaFinal)} puntos.`;
       congratsBanner.classList.remove("hidden");
-    } else if (est.notaFinal < 30) {
-      badge.textContent = "Reprobado";
-      badge.classList.add("status-fail");
     } else if (tieneConv) {
       if (est.notaConvocatoria >= minPass) {
         badge.textContent = "Aprobado en Convocatoria";
@@ -90,6 +87,9 @@
         badge.textContent = "Reprobado";
         badge.classList.add("status-fail");
       }
+    } else if (est.notaFinal < 30) {
+      badge.textContent = "Reprobado";
+      badge.classList.add("status-fail");
     } else {
       badge.textContent = "Pendiente de Convocatoria";
       badge.classList.add("status-pending");
@@ -120,11 +120,6 @@
       convVal.classList.add("is-na");
       convMax.textContent = "";
       convHint.textContent = `Aprobado con ${fmt(est.notaFinal)} pts (≥ ${minPass})`;
-    } else if (est.notaFinal < 30) {
-      convVal.textContent = "No aplica";
-      convVal.classList.add("is-fail");
-      convMax.textContent = "";
-      convHint.textContent = "Nota menor a 30 pts (sin derecho a convocatoria)";
     } else if (tieneConv) {
       convVal.textContent = fmt(est.notaConvocatoria);
       convMax.textContent = "/ 100";
@@ -132,6 +127,11 @@
         est.notaConvocatoria >= minPass
           ? "Convocatoria aprobada"
           : "Convocatoria registrada";
+    } else if (est.notaFinal < 30) {
+      convVal.textContent = "No aplica";
+      convVal.classList.add("is-fail");
+      convMax.textContent = "";
+      convHint.textContent = "Nota menor a 30 pts (sin derecho a convocatoria)";
     } else {
       convVal.textContent = "Pendiente";
       convVal.classList.add("is-pending");
